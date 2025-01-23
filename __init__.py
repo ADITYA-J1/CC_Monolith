@@ -1,44 +1,25 @@
-from typing import List
-from products import dao
+import cart
+import products
+from cart import get_cart
+import os
+
+def checkout(username):
+    cart = get_cart(username)
+    total = 0
+    for item in cart:
+        total += item.cost
+
+    #Here the exit can happen when a illegal memory is accessed
+    # or when a error is not handled properly
+   # os._exit(1)
+    return total
 
 
-class Product:
-    def __init__(self, id: int, name: str, description: str, cost: float, qty: int = 0):
-        self.id = id
-        self.name = name
-        self.description = description
-        self.cost = cost
-        self.qty = qty
-
-    @staticmethod
-    def load(data: dict):
-        return Product(
-            data['id'],
-            data['name'],
-            data['description'],
-            data['cost'],
-            data['qty']
-        )
-
-
-def list_products() -> List[Product]:
-    return [Product.load(product) for product in dao.list_products()]
-
-
-def get_product(product_id: int) -> Product:
-    product_data = dao.get_product(product_id)
-    if not product_data:
-        raise ValueError(f"Product with ID {product_id} does not exist")
-    return Product.load(product_data)
-
-
-def add_product(product: dict):
-    if not all(key in product for key in ('id', 'name', 'description', 'cost', 'qty')):
-        raise ValueError("Product data is incomplete")
-    dao.add_product(product)
-
-
-def update_qty(product_id: int, qty: int):
-    if qty < 0:
-        raise ValueError('Quantity cannot be negative')
-    dao.update_qty(product_id, qty)
+def complete_checkout(username):
+    cartv = cart.get_cart(username)
+    items = cartv
+    for item in items:
+        assert item.qty >= 1
+    for item in items:
+        cart.delete_cart(username)
+        products.update_qty(item.id, item.qty-1)
